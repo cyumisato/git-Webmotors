@@ -1,0 +1,121 @@
+﻿@model Webmotors.Models.Anuncio
+
+@{
+    var acao = Model == null || Model.ID == 0 ? "Adicionar" : "Editar";
+    ViewBag.Title = $"Anuncios - {acao}";
+
+    var Marcas = new List<SelectListItem>();
+    var Modelos = new List<SelectListItem>();
+    var Versoes = new List<SelectListItem>();
+    var Veiculos = new List<SelectListItem>();
+}
+
+<h2>@acao Produto</h2>
+
+@using (Html.BeginForm())
+{
+    <div class="form-group" style="@(Model.ID > 0 ? "" : "display: none;")">
+        @Html.LabelFor(m => m.ID)
+        @Html.TextBoxFor(m => m.ID, new { @class = "form-control", @readonly = "true" })
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.marca)
+        @Html.DropDownList("ddlMarca", Marcas, new { @class = "form-control", @style = Model.ID > 0 ? "display: none;" : "" })
+        @Html.TextBoxFor(m => m.marca, new { @class = "form-control", @readonly = "true", @style = Model.ID > 0 ? "" : "display: none;" })
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.modelo)
+        @Html.DropDownList("ddlModelo", Modelos, new { @class = "form-control", @style = Model.ID > 0 ? "display: none;" : "" })
+        @Html.TextBoxFor(m => m.modelo, new { @class = "form-control", @readonly = "true", @style = Model.ID > 0 ? "" : "display: none;" })
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.versao)
+        @Html.DropDownList("ddlVersao", Versoes, new { @class = "form-control", @style = Model.ID > 0 ? "display: none;" : "" })
+        @Html.TextBoxFor(m => m.versao, new { @class = "form-control", @readonly = "true", @style = Model.ID > 0 ? "" : "display: none;" })
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.ano)
+        @Html.TextBoxFor(m => m.ano, new { @class = "form-control", @type = "number", @min = 0, @max = DateTime.Now.AddYears(1).Year })
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.quilometragem)
+        @Html.TextBoxFor(m => m.quilometragem, new { @class = "form-control", @type = "number", @min = 0 })
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.observacao)
+        @Html.TextAreaFor(m => m.observacao, new { @class = "form-control" })
+    </div>
+
+    <button class="btn btn-outline" type="submit">Salvar</button>
+    <button class="btn btn-outline" type="reset" style="@(Model.ID > 0 ? "display: none;" : "")">Resetar Form</button>
+    <button class="btn btn-outline" href="@Url.Action("Index")">Cancelar</button>
+}
+
+@section scripts{
+
+    <script>
+
+        $.getJSON(
+            "@Url.Action("ObterMarcas")",
+            function (data) {
+                if (!data) {
+                    return;
+                }
+                $('#ddlMarca').append($('<option></option>').val('').text('Selecione'));
+                $.each(data, function (index, item) {
+                    $('#ddlMarca').append($('<option></option>').val(item.ID).text(item.Name));
+                });
+            }
+        );        
+
+        $('#ddlMarca').change(function () {
+            $('#marca').val($('#ddlMarca option:selected').text());
+
+            $('#ddlModelo').empty();
+            $('#ddlVersao').empty();
+
+            $.getJSON(
+                '@Url.Action("ObterModelos")',
+                {
+                    id: $(this).val()
+                },
+                function (data) {
+                    if (!data) {
+                        return;
+                    }
+                    $('#ddlModelo').append($('<option></option>').val('').text('Selecione'));
+                    $.each(data, function (index, item) {
+                        $('#ddlModelo').append($('<option></option>').val(item.ID).text(item.Name));
+                    });
+                }
+            );
+        });
+
+        $('#ddlModelo').change(function () {
+            $('#modelo').val($('#ddlModelo option:selected').text());
+
+            $('#ddlVersao').empty();
+
+            $.getJSON(
+                '@Url.Action("ObterVersoes")',
+                {
+                    id: $(this).val()
+                },
+                function (data) {
+                    if (!data) {
+                        return;
+                    }
+                    $('#ddlVersao').append($('<option></option>').val('').text('Selecione'));
+                    $.each(data, function (index, item) {
+                        $('#ddlVersao').append($('<option></option>').val(item.ID).text(item.Name));
+                    });
+                }
+            );
+        });
+
+        $('#ddlVersao').change(function () {
+            $('#versao').val($('#ddlVersao option:selected').text());
+        
+        });
+    </script>
+}
